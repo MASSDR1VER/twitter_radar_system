@@ -1,0 +1,8 @@
+The issue is that there are TWO return statements in the component:
+
+1. Line 847: ends ConversationsList function with )
+2. Line 849: starts main component return
+
+This is causing the syntax error. The ConversationsList is properly defined as an arrow function with parentheses, but the main component return should be the only return statement.
+
+Solution: Remove the first ) on line 847 and keep only the main return statement.

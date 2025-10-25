@@ -1,268 +1,557 @@
-# InteractRadar
+# 🚀 InteractRadar
 
-Campaign-based Twitter engagement automation system with AI-powered replies and comprehensive analytics.
+**Advanced Twitter Engagement Automation System**
 
-## 🚀 Quick Start
+InteractRadar is a powerful campaign-based Twitter automation platform that helps you find and engage with your target audience automatically. The system analyzes seed users' followers, filters tweets by keywords, and generates AI-powered replies to build meaningful connections.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green.svg)](https://fastapi.tiangolo.com/)
+
+---
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [Tech Stack](#-tech-stack)
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [How It Works](#-how-it-works)
+- [Current Status](#-current-status)
+- [Roadmap](#-roadmap)
+- [API Documentation](#-api-documentation)
+- [Contributing](#-contributing)
+
+---
+
+## ✨ Features
+
+### ✅ Implemented
+
+- **Campaign Management**
+  - Create unlimited campaigns with custom configurations
+  - Define seed users (influencers/target accounts)
+  - Set keyword filters for tweet matching
+  - Daily reply limits and rate limiting
+  - Dry-run mode for testing
+
+- **Intelligent User Discovery**
+  - Analyze seed users' recent tweets
+  - Find top engaged users (likers, retweeters)
+  - Scoring system: Likes (+1), Retweets (+2), Replies (+3)
+  - Configurable top N users selection
+
+- **Smart Post Filtering**
+  - Keyword-based tweet matching
+  - Lookback period configuration (days)
+  - Maximum posts per user limit
+  - Real-time filtering during analysis
+
+- **Real-Time Progress Tracking**
+  - Server-Sent Events (SSE) for live updates
+  - Campaign logs with timestamps and levels
+  - Progress indicators for each analysis step
+  - Connection status monitoring
+
+- **Twitter Integration**
+  - Cookie-based authentication (no API keys needed)
+  - Support for browser extension cookie format
+  - User profile fetching
+  - Tweet retrieval and analysis
+  - Engagement metrics collection
+
+- **Analytics & Reporting**
+  - Matched posts view with filtering
+  - Campaign statistics dashboard
+  - CTR tracking (Click-Through Rate)
+  - Engagement metrics (likes, retweets, replies)
+
+- **Modern UI/UX**
+  - Responsive Next.js 15 frontend
+  - Dark/Light mode support
+  - Real-time log streaming
+  - Interactive campaign cards
+  - Status indicators and badges
+
+### 🚧 In Progress
+
+- **Auto-Reply System** (60% complete)
+  - AI-powered reply generation
+  - Template customization with placeholders
+  - Link shortening and tracking
+  - Reply scheduling
+
+- **Background Scheduler** (40% complete)
+  - Automatic campaign processing
+  - Queue management
+  - Retry logic for failed operations
+
+### 📅 Planned
+
+- **Grok AI Integration**
+  - Advanced post filtering with AI
+  - Context-aware relevance scoring
+  - Sentiment analysis
+
+- **Advanced Analytics**
+  - Charts and graphs
+  - Conversion tracking
+  - A/B testing for reply templates
+  - Performance metrics
+
+- **Multi-Account Support**
+  - Switch between Twitter accounts
+  - Account-level statistics
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FRONTEND (Next.js 15)                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│  │  Campaign    │  │  Real-Time   │  │   Matched    │         │
+│  │  Management  │  │     Logs     │  │    Posts     │         │
+│  └──────────────┘  └──────────────┘  └──────────────┘         │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ HTTP / SSE
+┌────────────────────────────▼────────────────────────────────────┐
+│                       BACKEND (FastAPI)                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                   Campaign Manager                        │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │
+│  │  │ Interaction │  │    Post     │  │    Auto     │     │  │
+│  │  │   Mapper    │  │   Filter    │  │   Replier   │     │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              Twitter Adapter                              │  │
+│  │  • Cookie Authentication                                  │  │
+│  │  • User & Tweet Fetching                                 │  │
+│  │  • Engagement Analysis                                    │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              Campaign Logger (SSE)                        │  │
+│  │  • Real-time log broadcasting                            │  │
+│  │  • Subscriber management                                  │  │
+│  │  • Log history (last 100 messages)                       │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+┌────────────────────────────▼────────────────────────────────────┐
+│                      MongoDB Database                           │
+│  • campaigns          • matched_posts    • interaction_map     │
+│  • replies           • tracked_links     • clicks              │
+│  • analytics         • settings                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework**: FastAPI (Python 3.10+)
+- **Database**: MongoDB with Motor (async driver)
+- **Twitter Client**: Custom async Twitter API wrapper
+- **Authentication**: Cookie-based (no API keys needed)
+- **Real-time**: Server-Sent Events (SSE)
+- **AI**: OpenAI/Anthropic/Grok integration ready
+
+### Frontend
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **UI Library**: shadcn/ui + Tailwind CSS
+- **State Management**: React Hooks
+- **Real-time**: EventSource (SSE)
+
+### DevOps
+- **Containerization**: Docker support
+- **Process Management**: Async/Await patterns
+- **Logging**: Structured logging with levels
+- **Error Handling**: Comprehensive try-catch blocks
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- Python 3.10 or higher
+- Node.js 18 or higher
+- MongoDB (local or Docker)
+- Twitter account with cookies
 
 ### Backend Setup
 
-1. **Install Dependencies**
 ```bash
 cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-2. **Configure Environment**
-```bash
+# Create .env file
 cp .env.example .env
-# Edit .env with your settings
+
+# Configure MongoDB connection in .env
+MONGODB_URI=mongodb://localhost:27017
+DATABASE_NAME=twitter_radar
+
+# Run the server
+python main.py
 ```
 
-Required environment variables:
-- `MONGODB_URI` - MongoDB connection string
-- `OPENAI_API_KEY` - OpenAI API key (for GPT-4)
-- `ANTHROPIC_API_KEY` - Anthropic API key (for Claude)
-- `BITLY_API_KEY` - Optional, for link shortening
-
-3. **Setup Twitter Authentication**
-```bash
-cd backend
-cp cookie.json.example cookie.json
-# Edit cookie.json with your Twitter cookies
-```
-
-Get your Twitter cookies:
-1. Login to Twitter in your browser
-2. Open DevTools (F12) → Application/Storage → Cookies
-3. Copy values for: `ct0`, `auth_token`, `kdt`
-
-4. **Start Backend**
-```bash
-cd backend
-python3 main.py
-```
-
-Backend will run on `http://localhost:8000`
-API docs: `http://localhost:8000/docs`
+Backend will start at `http://localhost:8000`
 
 ### Frontend Setup
 
-1. **Install Dependencies**
 ```bash
 cd frontend
-npm install
-```
 
-2. **Start Frontend**
-```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
 ```
 
-Frontend will run on `http://localhost:3000`
+Frontend will start at `http://localhost:3000`
 
-## 📋 Features
+### MongoDB Setup (Docker)
 
-### Campaign Management
-- **Seed User Targeting**: Define influential users to find their engaged followers
-- **Interaction Mapping**: Automatically discover top interacted users
-- **Keyword Filtering**: Filter tweets by relevant keywords
-- **AI-Powered Replies**: Generate personalized replies using GPT-4, Claude, or Grok AI
-- **Rate Limiting**: Smart spam prevention with daily/hourly limits
-- **Dry Run Mode**: Test campaigns without posting to Twitter
-
-### Analytics
-- Real-time campaign metrics
-- Click tracking with shortened URLs
-- CTR (Click-Through Rate) monitoring
-- Engagement analytics (likes, retweets, replies)
-- Top performing replies
-- Error rate tracking
-
-### AI Providers
-- **OpenAI (GPT-4)**: High-quality reply generation
-- **Anthropic (Claude)**: Alternative LLM for replies
-- **Grok AI**: Twitter's native AI for analysis and replies
-- **Hybrid Mode**: Grok approval + GPT-4/Claude generation
-
-## 🎯 How It Works
-
-1. **Create Campaign**: Define seed users, keywords, and target URL
-2. **Automatic Analysis**: System finds top users and matching tweets
-3. **Scheduled Replies**: Auto-posts replies every 5 minutes (rate-limited)
-4. **Track Performance**: Monitor clicks, CTR, and engagement
-
-## 📁 Project Structure
-
-```
-twitter_radar_system/
-├── backend/
-│   ├── main.py                    # FastAPI app
-│   ├── cookie.json                # Twitter auth (gitignored)
-│   ├── modules/
-│   │   ├── campaign/              # Campaign logic
-│   │   ├── tracking/              # Analytics & links
-│   │   ├── scheduler/             # Task automation
-│   │   └── integrations/          # Twitter adapter
-│   └── api/
-│       ├── campaigns.py           # Campaign endpoints
-│       ├── analytics.py           # Analytics endpoints
-│       └── tracking.py            # Click tracking
-└── frontend/
-    └── app/
-        ├── page.tsx               # Landing page
-        ├── (dashboard)/
-        │   ├── dashboard/         # Overview
-        │   └── campaigns/         # Campaign management
-        └── components/            # UI components
+```bash
+docker run -d \
+  --name mongodb \
+  -p 27017:27017 \
+  -v mongodb_data:/data/db \
+  mongo:latest
 ```
 
-## 🔧 Configuration
+---
 
-### Campaign Settings
+## 🚀 Quick Start
+
+### 1. Add Twitter Cookies
+
+1. Install a browser extension like "Cookie Editor"
+2. Go to twitter.com and export cookies as JSON
+3. Navigate to Settings page in InteractRadar
+4. Paste the cookie JSON and validate
+
+Required cookies: `ct0`, `auth_token`, `kdt`
+
+### 2. Create Your First Campaign
 
 ```json
 {
-  "name": "SaaS Founders Campaign",
-  "seed_users": ["@elonmusk", "@sama"],
-  "top_n_users": 100,
+  "name": "Tech Influencer Outreach",
+  "seed_users": ["@elonmusk", "@sama", "@naval"],
+  "keywords": ["AI", "startup", "technology"],
+  "top_n_users": 50,
   "lookback_days": 7,
-  "keywords": ["startup", "funding", "SaaS"],
-  "target_url": "https://yourproduct.com",
-  "reply_template": "Great insights! Check this out: {link}",
-  "ai_provider": "openai",
   "daily_reply_limit": 50,
+  "reply_template": "Hey {author}, interesting take! Check this out: {url}",
+  "target_url": "https://yoursite.com",
+  "ai_provider": "openai",
   "dry_run": true
 }
 ```
 
-### Rate Limits
+### 3. Start Campaign
 
-- **Daily**: Configurable per campaign (default: 50)
-- **Hourly**: 30 replies (global)
-- **Minimum Delay**: 120 seconds between replies
+1. Click "New Campaign" button
+2. Fill in the form with your parameters
+3. Click "Create Campaign"
+4. Navigate to campaign detail page
+5. Click "Start Campaign"
+6. Watch real-time logs as analysis proceeds
 
-## 📊 API Endpoints
+---
 
-### Campaigns
-- `POST /api/v1/campaigns/create` - Create campaign
-- `GET /api/v1/campaigns` - List campaigns
-- `GET /api/v1/campaigns/{id}` - Get campaign
-- `POST /api/v1/campaigns/{id}/start` - Start campaign
-- `POST /api/v1/campaigns/{id}/stop` - Stop campaign
-- `DELETE /api/v1/campaigns/{id}` - Delete campaign
+## 🔄 How It Works
 
-### Analytics
-- `GET /api/v1/analytics/campaign/{id}` - Campaign analytics
-- `GET /api/v1/analytics/dashboard` - Dashboard stats
+### Campaign Flow
 
-### Tracking
-- `GET /r/{short_code}` - Redirect and track click
+```
+1. START CAMPAIGN
+   └─> Set status to "active"
+   └─> Trigger analysis in background
 
-## 🗄️ Database Schema
+2. INTERACTION MAPPING (Step 1)
+   ├─> For each seed user:
+   │   ├─> Fetch last 20 tweets
+   │   ├─> Get likers (50 users) → +1 point each
+   │   ├─> Get retweeters (50 users) → +2 points each
+   │   └─> Delay: 2 seconds every 5 tweets
+   ├─> Sort users by engagement score
+   └─> Select top N users
 
-### Collections
-- `campaigns` - Campaign configurations
-- `interaction_map` - Top interacted users
-- `matched_posts` - Filtered tweets
-- `campaign_replies` - Posted replies
-- `click_events` - Click tracking data
-- `short_links` - URL mappings
+3. POST FILTERING (Step 2)
+   ├─> For each top user:
+   │   ├─> Fetch last 50 tweets
+   │   ├─> Filter by keywords (case-insensitive)
+   │   ├─> Limit: 5 posts per user
+   │   └─> Delay: 2 seconds every 10 users
+   └─> Save matched posts to database
 
-## 🔐 Security
+4. GROK AI FILTER (Step 3 - Optional)
+   ├─> For each matched post:
+   │   ├─> Send to Grok AI with campaign context
+   │   └─> Filter based on relevance score
+   └─> Keep only approved posts
 
-1. **Cookie Authentication**: Keep `cookie.json` secure and gitignored
-2. **API Keys**: Store in environment variables, never commit
-3. **Rate Limiting**: Prevents spam and Twitter rate limits
-4. **Dry Run**: Test before posting real tweets
+5. AUTO REPLY (Step 4 - In Progress)
+   ├─> For pending posts:
+   │   ├─> Generate AI reply using template
+   │   ├─> Shorten target URL
+   │   ├─> Post reply (if not dry-run)
+   │   └─> Update status to "replied"
+   └─> Track clicks on shortened links
 
-## 📝 Environment Variables
-
-```env
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/interactradar
-
-# AI Providers
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Link Shortening (optional)
-BITLY_API_KEY=...
-
-# Application
-BASE_URL=http://localhost:8000
-ENVIRONMENT=development
+6. ANALYTICS
+   └─> Real-time dashboard updates
+   └─> Click tracking
+   └─> Conversion metrics
 ```
 
-## 🚦 Development
+### Rate Limiting Strategy
 
-### Backend Tests
-```bash
-cd backend
-pytest
+To avoid Twitter rate limits:
+- **20 tweets** per seed user (reduced from 100)
+- **2 second delay** every 5 tweets during interaction analysis
+- **3 second delay** between seed users
+- **2 second delay** every 10 users during post filtering
+- All delays are configurable
+
+---
+
+## 📊 Current Status
+
+### ✅ Completed Features (v0.1)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Campaign CRUD | ✅ | Create, Read, Update, Delete campaigns |
+| Interaction Mapping | ✅ | Find top engaged users from seed accounts |
+| Post Filtering | ✅ | Keyword-based tweet filtering |
+| Real-time Logs | ✅ | SSE-based live progress updates |
+| Matched Posts View | ✅ | View all filtered tweets with metrics |
+| Twitter Auth | ✅ | Cookie-based authentication |
+| MongoDB Integration | ✅ | Async database operations |
+| Frontend UI | ✅ | Next.js dashboard with shadcn/ui |
+| API Endpoints | ✅ | RESTful API with FastAPI |
+| Campaign Logger | ✅ | SSE broadcasting with history |
+| Rate Limiting | ✅ | Smart delays to avoid Twitter limits |
+
+### 🚧 In Development (v0.2 - Next 2 weeks)
+
+| Feature | Progress | ETA |
+|---------|----------|-----|
+| Auto-Reply System | 60% | 1 week |
+| Background Scheduler | 40% | 1 week |
+| Link Tracking | 70% | 3 days |
+| AI Reply Generation | 50% | 1 week |
+
+### 📅 Planned (v0.3+)
+
+- Grok AI Integration
+- Advanced Analytics Dashboard
+- Charts and Graphs (Chart.js/Recharts)
+- A/B Testing for Templates
+- Multi-Account Support
+- Reply Approval Workflow
+- Webhook Notifications
+- Export Reports (CSV/PDF)
+
+---
+
+## 🌐 API Documentation
+
+### Base URL
+```
+http://localhost:8000/api/v1
 ```
 
-### Frontend Tests
-```bash
-cd frontend
-npm test
+### Endpoints
+
+#### Campaigns
+
+```http
+# List all campaigns
+GET /campaigns?status=active&limit=50&offset=0
+
+# Get campaign by ID
+GET /campaigns/{campaign_id}
+
+# Create campaign
+POST /campaigns/create
+Content-Type: application/json
+
+{
+  "name": "Campaign Name",
+  "seed_users": ["@user1", "@user2"],
+  "keywords": ["keyword1", "keyword2"],
+  "top_n_users": 50,
+  "lookback_days": 7,
+  "daily_reply_limit": 50,
+  "reply_template": "Template with {author} and {url}",
+  "target_url": "https://example.com",
+  "ai_provider": "openai",
+  "dry_run": true
+}
+
+# Start campaign
+POST /campaigns/{campaign_id}/start
+
+# Stop campaign
+POST /campaigns/{campaign_id}/stop
+
+# Delete campaign
+DELETE /campaigns/{campaign_id}
+
+# Get matched posts
+GET /campaigns/{campaign_id}/matched-posts?status=pending&limit=100
+
+# Get real-time logs (SSE)
+GET /campaigns/{campaign_id}/logs
+Accept: text/event-stream
 ```
 
-### Lint
-```bash
-# Backend
-cd backend
-flake8
+#### Settings
 
-# Frontend
-cd frontend
-npm run lint
+```http
+# Validate Twitter cookies
+POST /settings/twitter/validate
+Content-Type: application/json
+
+{
+  "ct0": "...",
+  "auth_token": "...",
+  "kdt": "..."
+}
+
+# Or browser extension format:
+[
+  {"name": "ct0", "value": "..."},
+  {"name": "auth_token", "value": "..."},
+  {"name": "kdt", "value": "..."}
+]
+
+# Get Twitter account info
+GET /settings/twitter/account
 ```
 
-## 📦 Production Deployment
+#### Analytics
 
-1. Set `dry_run: false` in campaigns
-2. Configure production MongoDB
-3. Use process manager (PM2, systemd)
-4. Set up monitoring/alerts
-5. Implement cookie refresh mechanism
-6. Configure CORS for production domain
+```http
+# Get campaign analytics
+GET /analytics/campaigns/{campaign_id}
+```
+
+---
+
+## 🗺️ Roadmap
+
+### Phase 1: Core Features ✅ (Completed)
+- [x] Campaign management
+- [x] User discovery
+- [x] Post filtering
+- [x] Real-time logs
+- [x] Twitter integration
+
+### Phase 2: Automation 🚧 (In Progress - Week 1-2)
+- [ ] Auto-reply system
+- [ ] Background scheduler
+- [ ] Link tracking
+- [ ] AI reply generation
+- [ ] Queue management
+
+### Phase 3: Intelligence (Week 3-4)
+- [ ] Grok AI integration
+- [ ] Sentiment analysis
+- [ ] Smart filtering
+- [ ] Context understanding
+- [ ] Reply quality scoring
+
+### Phase 4: Analytics (Month 2)
+- [ ] Advanced dashboard
+- [ ] Charts and graphs
+- [ ] Conversion tracking
+- [ ] A/B testing
+- [ ] Export reports
+
+### Phase 5: Scale (Month 3+)
+- [ ] Multi-account support
+- [ ] Team collaboration
+- [ ] Role-based access
+- [ ] Webhook integrations
+- [ ] Enterprise features
+
+---
+
+## 🐛 Known Issues
+
+1. **Twitter Rate Limits**: Aggressive campaigns may hit rate limits. Use delays and smaller batch sizes.
+2. **Cookie Expiration**: Twitter cookies expire after ~30 days. Re-authenticate when needed.
+3. **Memory Usage**: Large campaigns (1000+ matched posts) may consume significant memory.
+4. **SSE Connection**: Browser may disconnect after 2 minutes of inactivity. Auto-reconnection planned.
+
+---
 
 ## 🤝 Contributing
 
-This is a private project. For issues or features, create an issue in the repository.
+Contributions are welcome! Please follow these steps:
 
-## 📄 License
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-MIT License - see LICENSE file for details
+### Development Guidelines
 
-## ⚠️ Disclaimer
+- Follow PEP 8 for Python code
+- Use TypeScript for all frontend code
+- Write descriptive commit messages
+- Add comments for complex logic
+- Update documentation for new features
 
-Use responsibly. Automated Twitter engagement may violate Twitter's Terms of Service. Use at your own risk.
+---
 
-## 🆘 Troubleshooting
+## 📝 License
 
-**Backend won't start:**
-- Check Python version (3.10+)
-- Verify MongoDB is running
-- Check `cookie.json` format
+MIT License - See LICENSE file for details
 
-**Twitter auth fails:**
-- Refresh cookies (they expire)
-- Ensure all three fields present
-- Try logging out and back in
+**Important**: Use responsibly and comply with Twitter's Terms of Service. Automated engagement may violate platform policies. The authors are not responsible for any account suspensions or bans.
 
-**No tweets found:**
-- Check seed users are valid
-- Verify keywords aren't too restrictive
-- Increase `lookback_days`
+---
 
-**Rate limited:**
-- Reduce `daily_reply_limit`
-- Check Twitter account status
-- Increase delay between replies
+## 🙏 Acknowledgments
 
-## 📚 Documentation
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [Next.js](https://nextjs.org/) - React framework
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [MongoDB](https://www.mongodb.com/) - NoSQL database
+- Twitter API community for reverse engineering insights
 
-See `/backend/README.md` for detailed backend documentation.
-See `/ARCHITECTURE.md` for system architecture details.
-See `/IMPLEMENTATION_SUMMARY.md` for implementation notes.
+---
+
+## 📧 Support
+
+For questions, issues, or feature requests:
+- Open an issue on GitHub
+- Check existing documentation
+- Review API docs at `/docs`
+
+---
+
+**Built with ❤️ for the Twitter automation community**

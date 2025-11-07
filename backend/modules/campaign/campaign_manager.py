@@ -242,14 +242,21 @@ class CampaignManager:
             )
 
             # Save matched posts
+            saved_count = 0
             for post in matching_posts:
-                post["campaign_id"] = ObjectId(campaign_id)
-                post["reply_status"] = "pending"
-                post["found_at"] = datetime.now()
-                await self.db.matched_posts.insert_one(post)
+                try:
+                    post["campaign_id"] = ObjectId(campaign_id)
+                    post["reply_status"] = "pending"
+                    post["found_at"] = datetime.now()
+                    result = await self.db.matched_posts.insert_one(post)
+                    saved_count += 1
+                    logger.debug(f"Saved post {result.inserted_id}: @{post.get('username')}")
+                except Exception as e:
+                    logger.error(f"Failed to save matched post: {e}")
+                    logger.error(f"Post data: {post}")
 
-            logger.info(f"    Found {len(matching_posts)} matching posts")
-            await campaign_logger.success(campaign_id, f"✅ Found {len(matching_posts)} matching posts ready for replies", matching_posts_count=len(matching_posts))
+            logger.info(f"    Found {len(matching_posts)} matching posts, saved {saved_count} to database")
+            await campaign_logger.success(campaign_id, f"✅ Found {len(matching_posts)} matching posts ready for replies (saved {saved_count})", matching_posts_count=len(matching_posts), saved_count=saved_count)
 
             # Update campaign status
             await self.db.campaigns.update_one(
@@ -266,6 +273,14 @@ class CampaignManager:
             logger.info(f"✅ Campaign analysis completed")
             await campaign_logger.success(campaign_id, "🎉 Campaign analysis completed successfully! Ready to start replying.")
 
+            # Start reply processing in background if posts were found
+            if len(matching_posts) > 0 and not campaign.get("dry_run", False):
+                logger.info(f"Starting reply processing for {len(matching_posts)} posts...")
+                await campaign_logger.info(campaign_id, f"🤖 Starting auto-reply processing for {len(matching_posts)} posts...")
+                asyncio.create_task(self.process_campaign_replies(campaign_id))
+            elif campaign.get("dry_run", False):
+                await campaign_logger.info(campaign_id, "ℹ️ Dry-run mode enabled - skipping auto-replies")
+
             return {
                 "success": True,
                 "top_users_found": len(top_users),
@@ -275,6 +290,80 @@ class CampaignManager:
         except Exception as e:
             logger.error(f"Error analyzing campaign: {e}")
             return {"success": False, "error": str(e)}
+
+    async def process_campaign_replies(self, campaign_id: str) -> None:
+        """
+        Process all pending replies for a campaign in background.
+
+        This runs continuously until all pending posts are processed or campaign is stopped.
+
+        Args:
+            campaign_id: Campaign ID
+        """
+        try:
+            logger.info(f"🤖 Starting background reply processing for campaign {campaign_id}")
+
+            while True:
+                # Get campaign to check status and limits
+                campaign = await self.db.campaigns.find_one({"_id": ObjectId(campaign_id)})
+
+                if not campaign:
+                    logger.error(f"Campaign {campaign_id} not found, stopping reply processing")
+                    break
+
+                # Stop if campaign is no longer active
+                if campaign["status"] != "active":
+                    logger.info(f"Campaign {campaign_id} is {campaign['status']}, stopping reply processing")
+                    await campaign_logger.info(campaign_id, f"⏸️ Reply processing paused - campaign status: {campaign['status']}")
+                    break
+
+                # Check daily reply limit
+                daily_limit = campaign.get("daily_reply_limit", 50)
+                total_replies = campaign.get("total_replies", 0)
+
+                if total_replies >= daily_limit:
+                    logger.info(f"Campaign {campaign_id} reached daily limit ({daily_limit}), stopping")
+                    await campaign_logger.info(campaign_id, f"✋ Daily reply limit reached ({daily_limit} replies)")
+                    break
+
+                # Count pending posts
+                pending_count = await self.db.matched_posts.count_documents({
+                    "campaign_id": ObjectId(campaign_id),
+                    "reply_status": "pending"
+                })
+
+                if pending_count == 0:
+                    logger.info(f"No more pending posts for campaign {campaign_id}")
+                    await campaign_logger.success(campaign_id, "✅ All pending posts have been processed!")
+                    break
+
+                # Process one reply
+                logger.info(f"Processing reply {total_replies + 1}/{daily_limit} (remaining: {pending_count})...")
+                await campaign_logger.info(campaign_id, f"📝 Processing reply {total_replies + 1}/{daily_limit} ({pending_count} remaining)...")
+
+                result = await self.process_pending_reply(campaign_id)
+
+                if result.get("success"):
+                    if result.get("dry_run"):
+                        await campaign_logger.info(campaign_id, f"✅ [DRY RUN] Generated reply: {result.get('reply_text', '')[:100]}...")
+                    else:
+                        await campaign_logger.success(campaign_id, f"✅ Reply posted successfully!")
+
+                    # Delay between replies (2-5 seconds to avoid rate limits)
+                    await asyncio.sleep(3)
+                else:
+                    reason = result.get("reason", result.get("error", "Unknown error"))
+                    logger.warning(f"Reply processing failed: {reason}")
+                    await campaign_logger.warning(campaign_id, f"⚠️ Skipped: {reason}")
+
+                    # Shorter delay for failures
+                    await asyncio.sleep(1)
+
+            logger.info(f"✅ Reply processing completed for campaign {campaign_id}")
+
+        except Exception as e:
+            logger.error(f"Error in reply processing loop: {e}")
+            await campaign_logger.error(campaign_id, f"❌ Error in reply processing: {str(e)}")
 
     async def process_pending_reply(self, campaign_id: str) -> Dict[str, Any]:
         """

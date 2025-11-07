@@ -110,7 +110,7 @@ class AutoReplier:
         provider: str
     ) -> Optional[str]:
         """Generate reply using OpenAI or Anthropic."""
-        llm = LLMService(provider=provider)
+        llm = LLMService()
 
         prompt = f"""
 Generate a personalized Twitter reply.

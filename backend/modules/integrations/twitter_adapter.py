@@ -228,8 +228,7 @@ class TwitterAdapter:
         try:
             tweet = await self.client.create_tweet(
                 text=text,
-                reply_to=reply_to,
-                media_ids=media_ids
+                reply_to=reply_to
             )
 
             return {

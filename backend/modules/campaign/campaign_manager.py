@@ -442,9 +442,23 @@ class CampaignManager:
             await self.db.campaign_replies.insert_one(reply_doc)
 
             # Update matched post status
+            if result["success"]:
+                if result.get("dry_run"):
+                    new_status = "dry_run_tested"
+                else:
+                    new_status = "posted"
+            else:
+                new_status = "failed"
+
             await self.db.matched_posts.update_one(
                 {"_id": pending_post["_id"]},
-                {"$set": {"reply_status": "posted" if result["success"] else "failed"}}
+                {
+                    "$set": {
+                        "reply_status": new_status,
+                        "replied_at": datetime.now() if new_status == "posted" else None,
+                        "reply_text": result.get("reply_text")
+                    }
+                }
             )
 
             # Update campaign stats

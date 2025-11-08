@@ -24,7 +24,9 @@ interface MatchedPost {
   retweets: number
   url: string
   matched_keywords: string[]
-  reply_status: "pending" | "replied" | "failed"
+  reply_status: "pending" | "posted" | "failed" | "dry_run_tested" | "duplicate"
+  reply_text?: string
+  replied_at?: string
 }
 
 interface MatchedPostsProps {
@@ -67,12 +69,33 @@ export function MatchedPosts({ campaignId }: MatchedPostsProps) {
     switch (status) {
       case "pending":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-      case "replied":
+      case "posted":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      case "dry_run_tested":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
       case "failed":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      case "duplicate":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "posted":
+        return "✅ Posted"
+      case "dry_run_tested":
+        return "🧪 Tested"
+      case "duplicate":
+        return "⏭️ Skip"
+      case "pending":
+        return "⏳ Pending"
+      case "failed":
+        return "❌ Failed"
+      default:
+        return status
     }
   }
 
@@ -112,11 +135,11 @@ export function MatchedPosts({ campaignId }: MatchedPostsProps) {
               Pending
             </Button>
             <Button
-              variant={filter === "replied" ? "default" : "outline"}
+              variant={filter === "posted" ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilter("replied")}
+              onClick={() => setFilter("posted")}
             >
-              Replied
+              Posted
             </Button>
           </div>
         </div>
@@ -178,7 +201,7 @@ export function MatchedPosts({ campaignId }: MatchedPostsProps) {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={getStatusColor(post.reply_status)}>
-                      {post.reply_status}
+                      {getStatusLabel(post.reply_status)}
                     </Badge>
                   </TableCell>
                   <TableCell>
